@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CampusGrove — Track Every Tree on Campus</title>
+  <meta name="description" content="CampusGrove helps students and faculty track, learn about, and care for every tree on campus. Scan a QR code to discover any tree's full story." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌳</text></svg>" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- Leaf Particles (added by JS) -->
+  <div id="particles"></div>
+
+  <!-- ── NAVBAR ── -->
+  <nav class="navbar" id="navbar">
+    <a href="index.html" class="nav-logo">
+      <div class="nav-logo-icon">🌿</div>
+      <div class="nav-logo-text">Campus<span>Grove</span></div>
+    </a>
+    <ul class="nav-links">
+      <li><a href="#trees">Our Trees</a></li>
+      <li><a href="#map">Campus Map</a></li>
+      <li><a href="#scanner">QR Guide</a></li>
+      <li><a href="#stats">Statistics</a></li>
+      <li><a href="scan.html" class="nav-cta">📷 Scan QR</a></li>
+    </ul>
+  </nav>
+
+  <!-- ── HERO ── -->
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-badge">
+        <span class="dot"></span>
+        Campus Tree Registry · Since 2024
+      </div>
+
+      <h1 class="hero-title">
+        Every Tree<br>Tells a<br><span class="accent">Story.</span>
+      </h1>
+
+      <p class="hero-subtitle">
+        Walk up to any tree on campus, scan its QR tag, and uncover its age, health, scientific history, care protocols, and the secrets it's been keeping for decades.
+      </p>
+
+      <div class="hero-actions">
+        <a href="scan.html" class="btn btn-primary">
+          📷 Scan a Tree QR
+        </a>
+        <a href="#trees" class="btn btn-secondary">
+          🌳 Browse All Trees
+        </a>
+      </div>
+
+      <div class="hero-stats" id="hero-stats">
+        <!-- populated by JS -->
+      </div>
+    </div>
+
+    <!-- Hero SVG Tree Art -->
+    <div class="hero-visual">
+      <svg class="tree-silhouette" viewBox="0 0 400 500" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="treeGlow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#22c55e" stop-opacity="0.3"/>
+            <stop offset="100%" stop-color="#22c55e" stop-opacity="0"/>
+          </radialGradient>
+          <radialGradient id="canopyG" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#4ade80"/>
+            <stop offset="60%" stop-color="#16a34a"/>
+            <stop offset="100%" stop-color="#14532d"/>
+          </radialGradient>
+        </defs>
+        <ellipse cx="200" cy="220" rx="180" ry="200" fill="url(#treeGlow)"/>
+        <!-- Trunk -->
+        <path d="M170 480 L175 340 Q180 300 200 290 Q220 300 225 340 L230 480Z" fill="#6b432a" opacity="0.8"/>
+        <!-- Aerial roots -->
+        <path d="M175 380 Q140 390 120 420 Q130 415 160 400Z" fill="#8b5e3c" opacity="0.6"/>
+        <path d="M225 360 Q265 370 280 410 Q270 400 240 385Z" fill="#8b5e3c" opacity="0.6"/>
+        <!-- Main canopy layers -->
+        <ellipse cx="200" cy="200" rx="160" ry="130" fill="#14532d" opacity="0.5"/>
+        <ellipse cx="200" cy="170" rx="135" ry="110" fill="#15803d" opacity="0.7"/>
+        <ellipse cx="200" cy="140" rx="110" ry="95" fill="#16a34a" opacity="0.8"/>
+        <ellipse cx="200" cy="115" rx="90" ry="80" fill="#22c55e" opacity="0.7"/>
+        <ellipse cx="200" cy="95" rx="70" ry="62" fill="#4ade80" opacity="0.6"/>
+        <!-- Small highlights -->
+        <circle cx="145" cy="130" r="35" fill="#86efac" opacity="0.25"/>
+        <circle cx="255" cy="145" r="28" fill="#86efac" opacity="0.2"/>
+        <circle cx="200" cy="72" r="22" fill="#bbf7d0" opacity="0.3"/>
+        <!-- Leaf dots scatter -->
+        <circle cx="120" cy="190" r="8" fill="#4ade80" opacity="0.4"/>
+        <circle cx="280" cy="175" r="10" fill="#4ade80" opacity="0.35"/>
+        <circle cx="155" cy="85" r="6" fill="#86efac" opacity="0.5"/>
+        <circle cx="248" cy="92" r="7" fill="#86efac" opacity="0.45"/>
+      </svg>
+    </div>
+  </section>
+
+  <!-- ── STATS STRIP ── -->
+  <section class="section" id="stats" style="padding-top: 0;">
+    <div class="container">
+      <div class="stats-strip reveal" id="stats-strip">
+        <!-- populated by JS -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ── TREE DIRECTORY ── -->
+  <section class="section" id="trees">
+    <div class="container">
+      <div class="section-header reveal">
+        <div class="section-eyebrow">🌿 Tree Directory</div>
+        <h2 class="section-title">Meet Every Tree on Campus</h2>
+        <p class="section-subtitle">From century-old Peepals to vibrant flowering Gulmohar — each tree has a story waiting to be scanned.</p>
+      </div>
+
+      <div class="search-bar-wrap reveal">
+        <div class="search-input-wrap">
+          <span class="search-icon">🔍</span>
+          <input type="text" class="search-input" id="search-input" placeholder="Search by name, location, or type…" />
+        </div>
+        <button class="filter-btn active" data-filter="all" id="filter-all">All Trees</button>
+        <button class="filter-btn" data-filter="local">🇮🇳 Local</button>
+        <button class="filter-btn" data-filter="exotic">🌍 Exotic</button>
+        <button class="filter-btn" data-filter="flowering">🌸 Flowering</button>
+        <button class="filter-btn" data-filter="medicinal">💊 Medicinal</button>
+      </div>
+
+      <div class="tree-grid" id="tree-grid">
+        <!-- populated by JS -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ── CAMPUS MAP ── -->
+  <section class="section" id="map" style="background: rgba(255,255,255,0.01);">
+    <div class="container">
+      <div class="section-header reveal">
+        <div class="section-eyebrow">📍 Campus Map</div>
+        <h2 class="section-title">Find Any Tree Instantly</h2>
+        <p class="section-subtitle">Hover over a pin to see the tree. Click to open its full profile.</p>
+      </div>
+
+      <div class="map-placeholder reveal" id="campus-map">
+        <div class="map-tooltip" id="map-tooltip"></div>
+        <!-- SVG map rendered by JS -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ── HOW TO SCAN ── -->
+  <section class="section" id="scanner">
+    <div class="container">
+      <div class="scanner-wrap">
+        <div>
+          <div class="section-header reveal" style="margin-bottom: 32px;">
+            <div class="section-eyebrow">📷 QR Scanning</div>
+            <h2 class="section-title">Point, Scan, Discover</h2>
+            <p class="section-subtitle">Each tree wears a weatherproof QR tag. Just scan it with any smartphone — no app needed.</p>
+          </div>
+          <div class="scanner-instructions">
+            <div class="scanner-step reveal">
+              <div class="step-num">1</div>
+              <div class="step-text">
+                <h4>Find the QR Tag</h4>
+                <p>Look for the green weatherproof QR plate nailed at eye-level on the tree trunk.</p>
+              </div>
+            </div>
+            <div class="scanner-step reveal">
+              <div class="step-num">2</div>
+              <div class="step-text">
+                <h4>Open the Scanner</h4>
+                <p>Tap "Scan QR" on this website or use your phone's built-in camera to point at the code.</p>
+              </div>
+            </div>
+            <div class="scanner-step reveal">
+              <div class="step-num">3</div>
+              <div class="step-text">
+                <h4>Discover the Tree</h4>
+                <p>Instantly see the tree's full profile — age, health, care guide, and fascinating facts.</p>
+              </div>
+            </div>
+            <div class="scanner-step reveal">
+              <div class="step-num">4</div>
+              <div class="step-text">
+                <h4>Report Issues</h4>
+                <p>Notice something wrong? Submit a health report via the tree's profile page — it goes straight to the horticulture team.</p>
+              </div>
+            </div>
+          </div>
+          <a href="scan.html" class="btn btn-primary reveal" style="margin-top: 32px;">
+            📷 Open Live QR Scanner
+          </a>
+        </div>
+
+        <div class="scanner-box glass reveal" style="position: relative; min-height: 340px; display: flex; align-items: center; justify-content: center;">
+          <div class="scanner-corner tl"></div>
+          <div class="scanner-corner tr"></div>
+          <div class="scanner-corner bl"></div>
+          <div class="scanner-corner br"></div>
+          <div class="scanner-line"></div>
+          <div style="text-align: center; padding: 40px; z-index: 5;">
+            <div style="font-size: 72px; margin-bottom: 16px; animation: treeWave 3s ease-in-out infinite;">🌳</div>
+            <div style="font-size: 15px; font-weight: 600; color: var(--text-light);">Live Scanner Ready</div>
+            <div style="font-size: 13px; color: var(--text-muted); margin-top: 6px;">Tap below to activate camera</div>
+            <a href="scan.html" class="btn btn-primary" style="margin-top: 20px; padding: 10px 20px; font-size: 13px;">Activate Scanner →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── LOCAL VS EXOTIC ── -->
+  <section class="section" id="local-exotic">
+    <div class="container">
+      <div class="section-header reveal">
+        <div class="section-eyebrow">🌱 Biodiversity</div>
+        <h2 class="section-title">Local Roots, Global Visitors</h2>
+        <p class="section-subtitle">Our campus hosts a diversity of tree species — native guardians and exotic ambassadors alike.</p>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px;" class="reveal">
+        <div class="glass" style="padding: 36px;">
+          <div style="font-size: 48px; margin-bottom: 16px;">🇮🇳</div>
+          <h3 style="font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 700; margin-bottom: 12px; color: var(--green-400);">Local / Native Trees</h3>
+          <p style="font-size: 15px; color: var(--text-mid); line-height: 1.8; margin-bottom: 24px;">
+            These trees evolved in India and are perfectly adapted to local soil, climate, and wildlife. They support native birds, bats, pollinators, and insects. Preserving them is key to campus biodiversity.
+          </p>
+          <div id="local-tree-list" style="display: flex; flex-direction: column; gap: 10px;">
+            <!-- populated by JS -->
+          </div>
+        </div>
+
+        <div class="glass" style="padding: 36px;">
+          <div style="font-size: 48px; margin-bottom: 16px;">🌍</div>
+          <h3 style="font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 700; margin-bottom: 12px; color: var(--earth-300);">Exotic / Introduced Trees</h3>
+          <p style="font-size: 15px; color: var(--text-mid); line-height: 1.8; margin-bottom: 24px;">
+            These trees were introduced from other continents. While beautiful and valued, some grow aggressively. They're monitored for invasive behaviour and managed responsibly.
+          </p>
+          <div id="exotic-tree-list" style="display: flex; flex-direction: column; gap: 10px;">
+            <!-- populated by JS -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── FOOTER ── -->
+  <footer style="position: relative; z-index: 2; border-top: 1px solid rgba(134,239,172,0.1); padding: 48px 32px; text-align: center;">
+    <div class="nav-logo" style="justify-content: center; display: flex; margin-bottom: 16px; text-decoration: none;">
+      <div class="nav-logo-icon">🌿</div>
+      <div class="nav-logo-text" style="font-size: 24px;">Campus<span>Grove</span></div>
+    </div>
+    <p style="font-size: 14px; color: var(--text-muted); max-width: 480px; margin: 0 auto 24px;">
+      Maintained by the Campus Horticulture Department. Report issues: trees@campus.edu · Emergency: Ext. 4200
+    </p>
+    <p style="font-size: 12px; color: rgba(134,239,172,0.4);">© 2026 CampusGrove · All tree data verified by certified arborists</p>
+  </footer>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

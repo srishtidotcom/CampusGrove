@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tree Profile — CampusGrove</title>
+  <meta name="description" content="View full details, health status, care guide, and history of this campus tree." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌳</text></svg>" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .profile-bg-gradient {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+    }
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      padding: 8px 16px;
+      border-radius: 100px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      transition: var(--transition);
+      margin-bottom: 28px;
+      position: relative;
+      z-index: 5;
+    }
+    .back-btn:hover {
+      background: rgba(34,197,94,0.12);
+      color: var(--green-400);
+      border-color: rgba(34,197,94,0.25);
+    }
+    .report-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 22px;
+      border-radius: 100px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid rgba(249,115,22,0.4);
+      background: rgba(249,115,22,0.1);
+      color: #fdba74;
+      transition: var(--transition);
+      font-family: 'Inter', sans-serif;
+      text-decoration: none;
+    }
+    .report-btn:hover {
+      background: rgba(249,115,22,0.2);
+      border-color: rgba(249,115,22,0.6);
+      transform: translateY(-2px);
+    }
+
+    /* Modal */
+    .modal-bg {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(6px);
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    .modal-bg.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+    .modal {
+      background: var(--dark-700);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-lg);
+      padding: 36px;
+      max-width: 480px;
+      width: 100%;
+      position: relative;
+      transform: translateY(20px);
+      transition: transform 0.3s;
+    }
+    .modal-bg.open .modal { transform: none; }
+    .modal h3 { font-size: 20px; font-weight: 700; margin-bottom: 20px; color: var(--text-light); }
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%;
+      padding: 12px 16px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: var(--radius-sm);
+      color: var(--text-light);
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      resize: vertical;
+      transition: var(--transition);
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+      border-color: var(--green-500);
+      box-shadow: 0 0 0 3px rgba(34,197,94,0.12);
+    }
+    .form-group select option { background: var(--dark-700); color: var(--text-light); }
+    .modal-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 22px;
+      cursor: pointer;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      transition: var(--transition);
+    }
+    .modal-close:hover { background: rgba(255,255,255,0.08); color: var(--text-light); }
+
+    /* QR display */
+    .qr-display-wrap {
+      text-align: center;
+      padding: 24px;
+    }
+    .qr-canvas-wrap {
+      display: inline-block;
+      background: white;
+      padding: 16px;
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    }
+    .qr-canvas-wrap canvas, .qr-canvas-wrap img {
+      display: block;
+    }
+
+    .timeline-dot {
+      width: 10px;
+      height: 10px;
+      background: var(--green-500);
+      border-radius: 50%;
+      flex-shrink: 0;
+      margin-top: 5px;
+      box-shadow: 0 0 8px rgba(34,197,94,0.5);
+    }
+
+    .not-found {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 80vh;
+      text-align: center;
+      gap: 20px;
+      padding: 32px;
+    }
+  </style>
+</head>
+<body>
+  <div id="particles"></div>
+
+  <!-- NAVBAR -->
+  <nav class="navbar" id="navbar">
+    <a href="index.html" class="nav-logo">
+      <div class="nav-logo-icon">🌿</div>
+      <div class="nav-logo-text">Campus<span>Grove</span></div>
+    </a>
+    <ul class="nav-links">
+      <li><a href="index.html#trees">All Trees</a></li>
+      <li><a href="index.html#map">Campus Map</a></li>
+      <li><a href="scan.html" class="nav-cta">📷 Scan QR</a></li>
+    </ul>
+  </nav>
+
+  <!-- Profile content injected by JS -->
+  <div id="profile-root"></div>
+
+  <!-- Report Issue Modal -->
+  <div class="modal-bg" id="report-modal">
+    <div class="modal">
+      <button class="modal-close" id="modal-close-btn" aria-label="Close">✕</button>
+      <h3>🚨 Report an Issue</h3>
+      <div class="form-group">
+        <label>Your Name</label>
+        <input type="text" id="reporter-name" placeholder="e.g. Priya Sharma" />
+      </div>
+      <div class="form-group">
+        <label>Issue Type</label>
+        <select id="issue-type">
+          <option>Broken / Fallen Branch</option>
+          <option>Diseased Leaves</option>
+          <option>Pest Infestation</option>
+          <option>Vandalism / Damage</option>
+          <option>Waterlogging at Base</option>
+          <option>Dead Tree</option>
+          <option>QR Tag Damaged</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea id="issue-desc" rows="3" placeholder="Describe what you observed…"></textarea>
+      </div>
+      <button class="btn btn-primary" id="submit-report" style="width:100%;justify-content:center;">
+        📬 Submit Report
+      </button>
+    </div>
+  </div>
+
+  <!-- Report Success Toast -->
+  <div id="toast" style="position:fixed;bottom:32px;right:32px;z-index:300;background:var(--green-700);border:1px solid rgba(34,197,94,0.4);border-radius:16px;padding:16px 24px;font-size:14px;font-weight:600;color:var(--text-light);display:none;align-items:center;gap:10px;box-shadow:0 8px 32px rgba(0,0,0,0.4);max-width:320px;backdrop-filter:blur(16px);">
+    ✅ Report submitted! The horticulture team will review it within 48 hours.
+  </div>
+
+  <script src="data.js"></script>
+  <script>
+    // ── Particle animation ──
+    function createParticles() {
+      const c = document.getElementById('particles');
+      for (let i = 0; i < 10; i++) {
+        const p = document.createElement('div');
+        p.className = 'leaf-particle';
+        p.style.cssText = `left:${Math.random()*100}%;width:${4+Math.random()*6}px;height:${4+Math.random()*6}px;animation-duration:${8+Math.random()*14}s;animation-delay:${Math.random()*10}s;`;
+        c.appendChild(p);
+      }
+    }
+
+    // ── Navbar ──
+    window.addEventListener('scroll', () => {
+      document.getElementById('navbar')?.classList.toggle('scrolled', window.scrollY > 50);
+    });
+
+    const EMOJI = {
+      'Banyan Tree':'🌳','Neem Tree':'🌿','Rain Tree':'🌲',
+      'Indian Laburnum':'🌼','Peepal Tree':'🌳','Gulmohar':'🌺',
+      'Mango Tree':'🥭','Java Plum':'🫐','Arjuna Tree':'🌱','African Tulip':'🔴'
+    };
+    const getEmoji = n => EMOJI[n] || '🌳';
+
+    const BG_GRADIENTS = {
+      local:   ['#0a2010','#0f3018','#16a34a'],
+      exotic:  ['#1a1208','#2d2010','#b8864c'],
+    };
+
+    // ── QR Code Generation (pure canvas) ──
+    function generateQRPlaceholder(treeId, canvas) {
+      // Simple visual representation — in production use a real QR library
+      const ctx = canvas.getContext('2d');
+      canvas.width = 150;
+      canvas.height = 150;
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(0, 0, 150, 150);
+
+      // Seeded random based on treeId
+      let seed = treeId.charCodeAt(0) * 31 + treeId.charCodeAt(1) * 17 + parseInt(treeId.slice(1));
+      const rand = () => { seed = (seed * 1664525 + 1013904223) & 0xffffffff; return (seed >>> 0) / 0xffffffff; };
+
+      const M = 15;
+      const cell = Math.floor(150 / M);
+      ctx.fillStyle = '#111';
+
+      // Draw pseudo-QR cells
+      for (let r = 0; r < M; r++) {
+        for (let c2 = 0; c2 < M; c2++) {
+          const inCorner = (r < 3 && c2 < 3) || (r < 3 && c2 >= M-3) || (r >= M-3 && c2 < 3);
+          const filled = inCorner ? (r === 0 || r === 2 || c2 === 0 || c2 === 2 || (r===1&&c2===1)) : rand() > 0.52;
+          if (filled) {
+            ctx.fillRect(c2*cell + 1, r*cell + 1, cell - 2, cell - 2);
+          }
+        }
+      }
+
+      // Finder patterns (corner squares)
+      [[0,0],[0,M-3],[M-3,0]].forEach(([row, col]) => {
+        ctx.fillStyle = '#111';
+        ctx.fillRect(col*cell, row*cell, 3*cell, 3*cell);
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(col*cell+cell*0.5, row*cell+cell*0.5, 2*cell, 2*cell);
+        ctx.fillStyle = '#111';
+        ctx.fillRect(col*cell+cell, row*cell+cell, cell, cell);
+      });
+    }
+
+    // ── Render Profile ──
+    function renderProfile(tree) {
+      const hc = getHealthColor(tree.healthScore);
+      const emoji = getEmoji(tree.name);
+      const bg = tree.isLocal ? BG_GRADIENTS.local : BG_GRADIENTS.exotic;
+
+      const urgencyOrder = { 'Critical': 0, 'High': 1, 'Medium': 2, 'Low': 3 };
+      const sortedCare = [...tree.care].sort((a, b) => urgencyOrder[a.urgency] - urgencyOrder[b.urgency]);
+
+      document.title = `${tree.name} — CampusGrove`;
+
+      document.getElementById('profile-root').innerHTML = `
+        <!-- Profile Hero -->
+        <div class="profile-hero">
+          <div class="profile-bg-gradient" style="background: radial-gradient(ellipse 80% 70% at 30% 0%, ${bg[2]}30 0%, transparent 60%),linear-gradient(180deg, ${bg[0]}, ${bg[1]});"></div>
+          <div class="profile-hero-content container">
+            <a href="index.html" class="back-btn">← Back to All Trees</a>
+            <div class="profile-header-grid">
+              <div class="profile-emoji-circle">${emoji}</div>
+              <div>
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+                  <span class="local-badge ${tree.isLocal ? 'local' : 'exotic'}">${tree.isLocal ? '🇮🇳 Native Species' : '🌍 Exotic / Introduced'}</span>
+                  <span class="local-badge" style="background:rgba(255,255,255,0.08);color:var(--text-muted);border-color:rgba(255,255,255,0.12);">${tree.category}</span>
+                  <span class="local-badge" style="background:rgba(255,255,255,0.08);color:var(--text-muted);border-color:rgba(255,255,255,0.12);">${tree.id}</span>
+                </div>
+                <div class="profile-name">${tree.name}</div>
+                <div class="profile-sci">${tree.scientificName} · Local: ${tree.localName}</div>
+                <div class="profile-location">📍 ${tree.location}</div>
+              </div>
+              <div class="profile-health-pill">
+                <div class="profile-health-score" style="color:${hc};">${tree.healthScore}%</div>
+                <div style="font-size:14px;font-weight:600;color:${hc};margin-top:4px;">${tree.health}</div>
+                <div class="profile-health-label">Health Score</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Profile Body -->
+        <div class="profile-content container">
+          <!-- Left Column -->
+          <div>
+            <!-- About -->
+            <div class="info-card">
+              <h3>🌿 About This Tree</h3>
+              <p style="font-size:15px;color:var(--text-mid);line-height:1.8;">${tree.description}</p>
+              <div class="fun-fact-box" style="margin-top:20px;">
+                <div class="fun-fact-label">💡 Did You Know?</div>
+                <div class="fun-fact-text">${tree.funFact}</div>
+              </div>
+            </div>
+
+            <!-- Tree Specs -->
+            <div class="info-card">
+              <h3>📊 Tree Specifications</h3>
+              <div class="spec-grid">
+                <div class="spec-item">
+                  <div class="spec-label">Age</div>
+                  <div class="spec-value">${tree.age} years</div>
+                </div>
+                <div class="spec-item">
+                  <div class="spec-label">Planted</div>
+                  <div class="spec-value">${tree.planted}</div>
+                </div>
+                <div class="spec-item">
+                  <div class="spec-label">Height</div>
+                  <div class="spec-value">${tree.height}</div>
+                </div>
+                <div class="spec-item">
+                  <div class="spec-label">Girth (Trunk)</div>
+                  <div class="spec-value">${tree.girth}</div>
+                </div>
+                <div class="spec-item">
+                  <div class="spec-label">CO₂ Absorbed</div>
+                  <div class="spec-value" style="color:var(--green-400);">${tree.co2Absorbed}</div>
+                </div>
+                <div class="spec-item">
+                  <div class="spec-label">Water Needed</div>
+                  <div class="spec-value">${tree.waterNeeded}</div>
+                </div>
+                <div class="spec-item">
+                  <div class="spec-label">Native Region</div>
+                  <div class="spec-value" style="font-size:14px;">${tree.nativeRegion}</div>
+                </div>
+                <div class="spec-item">
+                  <div class="spec-label">Last Inspected</div>
+                  <div class="spec-value" style="font-size:14px;">${tree.lastInspected}</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Care & Treatment Guide -->
+            <div class="info-card">
+              <h3>🩺 Care & Treatment Guide</h3>
+              <p style="font-size:13px;color:var(--text-muted);margin-bottom:20px;">If you notice any of the following conditions, here's what to do:</p>
+              ${sortedCare.map(c => `
+                <div class="care-card">
+                  <div class="care-card-header">
+                    <div class="care-issue">
+                      <span>⚠️</span> ${c.issue}
+                    </div>
+                    <span class="urgency-badge ${getUrgencyClass(c.urgency)}">${c.urgency}</span>
+                  </div>
+                  <div class="care-cause">🔍 Cause: ${c.cause}</div>
+                  <div class="care-treatment">💊 Treatment: ${c.treatment}</div>
+                </div>
+              `).join('')}
+              <button class="report-btn" id="open-report-btn" style="margin-top:8px;">
+                🚨 Report a New Issue
+              </button>
+            </div>
+
+            <!-- Tags -->
+            <div class="info-card">
+              <h3>🏷️ Tags</h3>
+              <div class="tree-card-tags" style="gap:8px;">
+                ${tree.tags.map(t => `<span class="tag" style="font-size:13px;padding:6px 14px;">${t}</span>`).join('')}
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column -->
+          <div>
+            <!-- QR Code Panel -->
+            <div class="info-card" style="margin-bottom:24px;">
+              <h3>📱 Tree QR Code</h3>
+              <div class="qr-display-wrap">
+                <div class="qr-canvas-wrap" id="qr-wrap">
+                  <canvas id="qr-canvas" width="150" height="150"></canvas>
+                </div>
+                <div style="margin-top:14px;font-size:13px;color:var(--text-muted);">Scan to open this tree's profile</div>
+                <div style="margin-top:4px;font-weight:700;font-size:16px;color:var(--green-400);letter-spacing:2px;">${tree.id}</div>
+                <button onclick="window.print()" style="margin-top:14px;padding:8px 18px;border-radius:100px;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);color:var(--green-400);font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.2s;" onmouseover="this.style.background='rgba(34,197,94,0.2)'" onmouseout="this.style.background='rgba(34,197,94,0.1)'">🖨 Print QR Tag</button>
+              </div>
+            </div>
+
+            <!-- Health Timeline -->
+            <div class="info-card">
+              <h3>📅 Inspection Schedule</h3>
+              <div style="display:flex;flex-direction:column;gap:14px;">
+                <div style="display:flex;align-items:flex-start;gap:12px;">
+                  <div class="timeline-dot"></div>
+                  <div>
+                    <div style="font-size:13px;font-weight:600;color:var(--text-light);">Last Inspected</div>
+                    <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">${tree.lastInspected}</div>
+                  </div>
+                </div>
+                <div style="width:1px;height:24px;background:rgba(134,239,172,0.2);margin-left:4px;"></div>
+                <div style="display:flex;align-items:flex-start;gap:12px;">
+                  <div class="timeline-dot" style="background:var(--earth-300);box-shadow:0 0 8px rgba(180,140,76,0.5);"></div>
+                  <div>
+                    <div style="font-size:13px;font-weight:600;color:var(--text-light);">Next Inspection Due</div>
+                    <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">${tree.nextInspection}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Environmental Impact -->
+            <div class="info-card">
+              <h3>🌍 Environmental Impact</h3>
+              <div style="display:flex;flex-direction:column;gap:14px;">
+                <div>
+                  <div class="spec-label">CO₂ Absorption</div>
+                  <div style="margin-top:6px;">
+                    <div class="health-bar-wrap">
+                      <div class="health-bar-track">
+                        <div class="health-bar-fill" style="width:${Math.min(parseInt(tree.co2Absorbed)/60*100,100)}%;background:linear-gradient(90deg,#22c55e,#4ade80);"></div>
+                      </div>
+                      <span style="font-size:13px;font-weight:600;color:#22c55e;min-width:70px;text-align:right;">${tree.co2Absorbed}</span>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <div class="spec-label">Health Score</div>
+                  <div style="margin-top:6px;">
+                    <div class="health-bar-wrap">
+                      <div class="health-bar-track">
+                        <div class="health-bar-fill" style="width:${tree.healthScore}%;background:linear-gradient(90deg,${hc},${hc}99);"></div>
+                      </div>
+                      <span style="font-size:13px;font-weight:600;color:${hc};min-width:40px;text-align:right;">${tree.healthScore}%</span>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <div class="spec-label">Weekly Water Requirement</div>
+                  <div style="font-size:20px;font-weight:700;color:var(--text-light);margin-top:4px;">${tree.waterNeeded} <span style="font-size:14px;color:var(--text-muted);">/ week</span></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Quick Nav -->
+            <div class="info-card">
+              <h3>🗺 Location on Campus</h3>
+              <p style="font-size:14px;color:var(--text-mid);margin-bottom:14px;">${tree.location}</p>
+              <a href="index.html#map" class="btn btn-secondary" style="width:100%;justify-content:center;border-radius:var(--radius-sm);padding:12px;">View on Campus Map →</a>
+            </div>
+          </div>
+        </div>
+      `;
+
+      // Generate QR after DOM is ready
+      const canvas = document.getElementById('qr-canvas');
+      if (canvas) generateQRPlaceholder(tree.id, canvas);
+
+      // Report modal
+      document.getElementById('open-report-btn')?.addEventListener('click', () => {
+        document.getElementById('report-modal').classList.add('open');
+      });
+      document.getElementById('modal-close-btn')?.addEventListener('click', () => {
+        document.getElementById('report-modal').classList.remove('open');
+      });
+      document.getElementById('report-modal')?.addEventListener('click', (e) => {
+        if (e.target.id === 'report-modal') document.getElementById('report-modal').classList.remove('open');
+      });
+      document.getElementById('submit-report')?.addEventListener('click', () => {
+        document.getElementById('report-modal').classList.remove('open');
+        const toast = document.getElementById('toast');
+        toast.style.display = 'flex';
+        setTimeout(() => { toast.style.display = 'none'; }, 4000);
+      });
+    }
+
+    // ── Not Found ──
+    function renderNotFound() {
+      document.getElementById('profile-root').innerHTML = `
+        <div class="not-found" style="z-index:2;position:relative;">
+          <div style="font-size:80px;">🌾</div>
+          <h2 style="font-family:'Playfair Display',serif;font-size:36px;letter-spacing:-1px;">Tree Not Found</h2>
+          <p style="color:var(--text-muted);font-size:16px;">The QR code may be invalid or this tree hasn't been registered yet.</p>
+          <a href="index.html" class="btn btn-primary">← Back to All Trees</a>
+        </div>
+      `;
+    }
+
+    // ── INIT ──
+    document.addEventListener('DOMContentLoaded', () => {
+      createParticles();
+
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get('id');
+
+      if (!id) { renderNotFound(); return; }
+
+      const tree = getTreeById(id);
+      if (!tree) { renderNotFound(); return; }
+
+      renderProfile(tree);
+    });
+  </script>
+</body>
+</html>

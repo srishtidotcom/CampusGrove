@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scan a Tree QR — CampusGrove</title>
+  <meta name="description"
+    content="Scan any tree's QR code on campus to instantly view its profile, health status, and care guide." />
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📷</text></svg>" />
+  <link rel="stylesheet" href="styles.css" />
+  <!-- html5-qrcode library -->
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <style>
+    /* ── Scanner Page Specific ── */
+    .scanner-page-wrap {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 100px 24px 60px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .scanner-card {
+      width: 100%;
+      max-width: 520px;
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      backdrop-filter: blur(24px);
+      box-shadow: var(--shadow-deep), 0 0 80px rgba(34, 197, 94, 0.08);
+    }
+
+    .scanner-header {
+      padding: 32px 32px 0;
+      text-align: center;
+    }
+
+    .scanner-icon-ring {
+      width: 72px;
+      height: 72px;
+      background: linear-gradient(135deg, var(--green-700), var(--green-600));
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+      margin: 0 auto 20px;
+      box-shadow: 0 8px 32px rgba(34, 197, 94, 0.35), 0 0 0 8px rgba(34, 197, 94, 0.1);
+      animation: ringPulse 2.5s ease-in-out infinite;
+    }
+
+    @keyframes ringPulse {
+
+      0%,
+      100% {
+        box-shadow: 0 8px 32px rgba(34, 197, 94, 0.35), 0 0 0 8px rgba(34, 197, 94, 0.1);
+      }
+
+      50% {
+        box-shadow: 0 8px 48px rgba(34, 197, 94, 0.5), 0 0 0 16px rgba(34, 197, 94, 0.05);
+      }
+    }
+
+    .scanner-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      margin-bottom: 8px;
+    }
+
+    .scanner-sub {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 28px;
+      line-height: 1.6;
+    }
+
+    /* Tabs */
+    .scanner-tabs {
+      display: flex;
+      border-bottom: 1px solid var(--glass-border);
+      padding: 0 32px;
+    }
+
+    .scanner-tab {
+      flex: 1;
+      padding: 14px 0;
+      text-align: center;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--text-muted);
+      border-bottom: 2px solid transparent;
+      transition: var(--transition);
+      background: none;
+      border-top: none;
+      border-left: none;
+      border-right: none;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .scanner-tab.active {
+      color: var(--green-400);
+      border-bottom-color: var(--green-400);
+    }
+
+    .scanner-body {
+      padding: 28px 32px 32px;
+    }
+
+    /* Camera panel */
+    .camera-panel,
+    .manual-panel {
+      display: none;
+    }
+
+    .camera-panel.active,
+    .manual-panel.active {
+      display: block;
+    }
+
+    #qr-reader-box {
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      position: relative;
+      background: rgba(0, 0, 0, 0.3);
+      min-height: 280px;
+      border: 1px solid var(--glass-border);
+    }
+
+    #qr-reader {
+      width: 100% !important;
+      border: none !important;
+    }
+
+    #qr-reader video {
+      width: 100% !important;
+      object-fit: cover;
+      border-radius: var(--radius-md);
+    }
+
+    /* Override html5-qrcode default styles */
+    #qr-reader__scan_region {
+      background: transparent !important;
+      border: none !important;
+    }
+
+    #qr-reader__scan_region img {
+      border-style: none !important;
+    }
+
+    #qr-reader__dashboard {
+      padding: 0 !important;
+      background: transparent !important;
+      border: none !important;
+    }
+
+    #qr-reader__dashboard_section_csr button {
+      background: linear-gradient(135deg, var(--green-600), var(--green-500)) !important;
+      color: white !important;
+      border: none !important;
+      border-radius: 100px !important;
+      padding: 12px 28px !important;
+      font-family: 'Inter', sans-serif !important;
+      font-weight: 600 !important;
+      font-size: 14px !important;
+      cursor: pointer !important;
+      margin-top: 16px !important;
+      width: 100% !important;
+    }
+
+    #qr-reader__dashboard_section_fsr {
+      display: none !important;
+    }
+
+    #qr-reader__status_span {
+      color: var(--text-muted) !important;
+      font-family: 'Inter', sans-serif !important;
+      font-size: 13px !important;
+    }
+
+    #qr-reader__header_message {
+      display: none !important;
+    }
+
+    #qr-reader select {
+      background: var(--dark-700) !important;
+      color: var(--text-light) !important;
+      border: 1px solid var(--glass-border) !important;
+      border-radius: var(--radius-sm) !important;
+      padding: 8px 12px !important;
+      font-family: 'Inter', sans-serif !important;
+      margin-top: 8px !important;
+    }
+
+    /* Scan overlay corners */
+    .scan-overlay {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    .scan-corner {
+      position: absolute;
+      width: 28px;
+      height: 28px;
+      border-color: var(--green-400);
+      border-style: solid;
+    }
+
+    .scan-corner.tl {
+      top: 16px;
+      left: 16px;
+      border-width: 3px 0 0 3px;
+      border-radius: 4px 0 0 0;
+    }
+
+    .scan-corner.tr {
+      top: 16px;
+      right: 16px;
+      border-width: 3px 3px 0 0;
+      border-radius: 0 4px 0 0;
+    }
+
+    .scan-corner.bl {
+      bottom: 16px;
+      left: 16px;
+      border-width: 0 0 3px 3px;
+      border-radius: 0 0 0 4px;
+    }
+
+    .scan-corner.br {
+      bottom: 16px;
+      right: 16px;
+      border-width: 0 3px 3px 0;
+      border-radius: 0 0 4px 0;
+    }
+
+    .scan-sweep {
+      position: absolute;
+      left: 8%;
+      right: 8%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--green-400), transparent);
+      top: 10%;
+      box-shadow: 0 0 12px 2px var(--green-500);
+      animation: sweepLine 2s ease-in-out infinite;
+    }
+
+    @keyframes sweepLine {
+      0% {
+        top: 10%;
+        opacity: 1;
+      }
+
+      50% {
+        top: 86%;
+        opacity: 1;
+      }
+
+      100% {
+        top: 10%;
+        opacity: 1;
+      }
+    }
+
+    /* Result Banner */
+    .result-banner {
+      display: none;
+      align-items: center;
+      gap: 14px;
+      padding: 16px 20px;
+      border-radius: var(--radius-md);
+      margin-bottom: 16px;
+      animation: fadeInUp 0.4s ease;
+    }
+
+    .result-banner.success {
+      background: rgba(34, 197, 94, 0.12);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+    }
+
+    .result-banner.error {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .result-banner-icon {
+      font-size: 28px;
+      flex-shrink: 0;
+    }
+
+    .result-banner-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-light);
+    }
+
+    .result-banner-sub {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* Manual entry */
+    .manual-input-wrap {
+      position: relative;
+      margin-bottom: 16px;
+    }
+
+    .manual-input {
+      width: 100%;
+      padding: 18px 20px;
+      font-size: 22px;
+      font-family: 'Inter', sans-serif;
+      font-weight: 700;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      background: rgba(255, 255, 255, 0.05);
+      border: 2px solid var(--glass-border);
+      border-radius: var(--radius-md);
+      color: var(--text-light);
+      text-align: center;
+      outline: none;
+      transition: var(--transition);
+    }
+
+    .manual-input::placeholder {
+      letter-spacing: 2px;
+      font-size: 16px;
+      font-weight: 400;
+      color: var(--text-muted);
+    }
+
+    .manual-input:focus {
+      border-color: var(--green-500);
+      box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.12);
+    }
+
+    /* Sample tree quick links */
+    .sample-trees {
+      margin-top: 24px;
+    }
+
+    .sample-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+
+    .sample-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .sample-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      border-radius: 100px;
+      background: rgba(34, 197, 94, 0.08);
+      border: 1px solid rgba(34, 197, 94, 0.2);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-mid);
+      cursor: pointer;
+      text-decoration: none;
+      transition: var(--transition-bounce);
+    }
+
+    .sample-chip:hover {
+      background: rgba(34, 197, 94, 0.18);
+      border-color: rgba(34, 197, 94, 0.4);
+      transform: translateY(-2px) scale(1.03);
+      color: var(--green-400);
+    }
+
+    /* Status indicator */
+    .status-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      border-radius: var(--radius-sm);
+      background: rgba(34, 197, 94, 0.06);
+      border: 1px solid rgba(34, 197, 94, 0.12);
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .status-dot.ready {
+      background: var(--green-500);
+      animation: pulse 2s infinite;
+    }
+
+    .status-dot.waiting {
+      background: var(--earth-300);
+    }
+
+    .status-dot.found {
+      background: var(--green-400);
+    }
+
+    .status-dot.error {
+      background: #ef4444;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="particles"></div>
+
+  <!-- NAVBAR -->
+  <nav class="navbar" id="navbar">
+    <a href="index.html" class="nav-logo">
+      <div class="nav-logo-icon">🌿</div>
+      <div class="nav-logo-text">Campus<span>Grove</span></div>
+    </a>
+    <ul class="nav-links">
+      <li><a href="index.html#trees">All Trees</a></li>
+      <li><a href="index.html#map">Campus Map</a></li>
+      <li><a href="scan.html" class="nav-cta active">📷 Scanner</a></li>
+    </ul>
+  </nav>
+
+  <div class="scanner-page-wrap">
+    <!-- Back link -->
+    <a href="index.html"
+      style="text-decoration:none;color:var(--text-muted);font-size:13px;margin-bottom:24px;display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:100px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);transition:var(--transition);"
+      onmouseover="this.style.color='var(--green-400)'" onmouseout="this.style.color='var(--text-muted)'">
+      ← Back to Home
+    </a>
+
+    <div class="scanner-card">
+      <!-- Header -->
+      <div class="scanner-header">
+        <div class="scanner-icon-ring">📷</div>
+        <div class="scanner-title">Scan a Tree QR</div>
+        <div class="scanner-sub">Point your camera at the green QR plate on any campus tree to instantly discover its
+          story.</div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="scanner-tabs">
+        <button class="scanner-tab active" data-tab="camera" id="tab-camera">📷 Camera Scan</button>
+        <button class="scanner-tab" data-tab="manual" id="tab-manual">⌨️ Enter Tree ID</button>
+      </div>
+
+      <!-- Body -->
+      <div class="scanner-body">
+
+        <!-- Status Bar -->
+        <div class="status-bar" id="status-bar">
+          <div class="status-dot waiting" id="status-dot"></div>
+          <span id="status-text">Ready to scan — click Start Camera below</span>
+        </div>
+
+        <!-- Result Banner (hidden initially) -->
+        <div class="result-banner" id="result-banner">
+          <div class="result-banner-icon" id="result-icon"></div>
+          <div>
+            <div class="result-banner-title" id="result-title"></div>
+            <div class="result-banner-sub" id="result-sub"></div>
+          </div>
+        </div>
+
+        <!-- Camera Panel -->
+        <div class="camera-panel active" id="panel-camera">
+          <div id="qr-reader-box">
+            <div class="scan-overlay">
+              <div class="scan-corner tl"></div>
+              <div class="scan-corner tr"></div>
+              <div class="scan-corner bl"></div>
+              <div class="scan-corner br"></div>
+              <div class="scan-sweep" id="scan-sweep"></div>
+            </div>
+            <div id="qr-reader"></div>
+          </div>
+          <p style="font-size:12px;color:var(--text-muted);text-align:center;margin-top:12px;">
+            Allow camera access when prompted · Best in good lighting
+          </p>
+        </div>
+
+        <!-- Manual Panel -->
+        <div class="manual-panel" id="panel-manual">
+          <div class="manual-input-wrap">
+            <input type="text" class="manual-input" id="manual-id-input" placeholder="e.g. T001" maxlength="5" />
+          </div>
+          <button class="btn btn-primary" id="manual-go-btn"
+            style="width:100%;justify-content:center;border-radius:var(--radius-md);padding:15px;">
+            🌳 Open Tree Profile
+          </button>
+
+          <!-- Sample Trees -->
+          <div class="sample-trees">
+            <div class="sample-label">Or try a sample tree</div>
+            <div class="sample-chips" id="sample-chips">
+              <!-- populated by JS -->
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Info Cards Below -->
+    <div style="max-width:520px;width:100%;margin-top:24px;display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+      <div class="glass" style="padding:20px;">
+        <div style="font-size:28px;margin-bottom:8px;">📍</div>
+        <div style="font-size:14px;font-weight:700;color:var(--text-light);margin-bottom:4px;">Can't find the QR?</div>
+        <div style="font-size:12px;color:var(--text-muted);line-height:1.6;">The metal plate is nailed at eye level on
+          the trunk's south-facing side, or near the base on short trees.</div>
+      </div>
+      <div class="glass" style="padding:20px;">
+        <div style="font-size:28px;margin-bottom:8px;">📵</div>
+        <div style="font-size:14px;font-weight:700;color:var(--text-light);margin-bottom:4px;">No camera access?</div>
+        <div style="font-size:12px;color:var(--text-muted);line-height:1.6;">Use the "Enter Tree ID" tab and type the ID
+          printed below the QR code (e.g. T001).</div>
+      </div>
+      <div class="glass" style="padding:20px;">
+        <div style="font-size:28px;margin-bottom:8px;">🧩</div>
+        <div style="font-size:14px;font-weight:700;color:var(--text-light);margin-bottom:4px;">QR Tag Damaged?</div>
+        <div style="font-size:12px;color:var(--text-muted);line-height:1.6;">Report a damaged tag via the tree's profile
+          page or email trees@campus.edu</div>
+      </div>
+      <div class="glass" style="padding:20px;">
+        <div style="font-size:28px;margin-bottom:8px;">💡</div>
+        <div style="font-size:14px;font-weight:700;color:var(--text-light);margin-bottom:4px;">Tip for Best Scan</div>
+        <div style="font-size:12px;color:var(--text-muted);line-height:1.6;">Hold the phone 15–25 cm from the tag in
+          shade. Angle it slightly to avoid glare on the metal plate.</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="data.js"></script>
+  <script>
+    // ── Particles ──
+    function createParticles() {
+      const c = document.getElementById('particles');
+      for (let i = 0; i < 10; i++) {
+        const p = document.createElement('div');
+        p.className = 'leaf-particle';
+        p.style.cssText = `left:${Math.random() * 100}%;width:${4 + Math.random() * 6}px;height:${4 + Math.random() * 6}px;animation-duration:${8 + Math.random() * 14}s;animation-delay:${Math.random() * 10}s;`;
+        c.appendChild(p);
+      }
+    }
+
+    // ── Navbar scroll ──
+    window.addEventListener('scroll', () => {
+      document.getElementById('navbar')?.classList.toggle('scrolled', window.scrollY > 50);
+    });
+
+    // ── Tab switching ──
+    let currentTab = 'camera';
+    let html5QrCode = null;
+    let scanning = false;
+
+    document.querySelectorAll('.scanner-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        const target = tab.dataset.tab;
+        if (target === currentTab) return;
+        currentTab = target;
+
+        document.querySelectorAll('.scanner-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+
+        document.getElementById('panel-camera').classList.toggle('active', target === 'camera');
+        document.getElementById('panel-manual').classList.toggle('active', target === 'manual');
+
+        if (target !== 'camera' && scanning) {
+          stopScanner();
+        }
+      });
+    });
+
+    // ── Status helpers ──
+    function setStatus(type, text) {
+      const dot = document.getElementById('status-dot');
+      const textEl = document.getElementById('status-text');
+      dot.className = 'status-dot ' + type;
+      textEl.textContent = text;
+    }
+
+    function showResult(type, icon, title, sub) {
+      const banner = document.getElementById('result-banner');
+      banner.className = 'result-banner ' + type;
+      banner.style.display = 'flex';
+      document.getElementById('result-icon').textContent = icon;
+      document.getElementById('result-title').textContent = title;
+      document.getElementById('result-sub').textContent = sub;
+    }
+
+    // ── QR Scanner ──
+    function handleScanSuccess(decodedText) {
+      if (!scanning) return;
+
+      // Try to extract tree ID from URL or raw text
+      let treeId = null;
+
+      // If it's a URL like tree.html?id=T001
+      try {
+        const urlObj = new URL(decodedText);
+        treeId = urlObj.searchParams.get('id');
+      } catch {
+        // Not a full URL — check if raw ID like T001
+        const idMatch = decodedText.toUpperCase().match(/T\d{3}/);
+        if (idMatch) treeId = idMatch[0];
+      }
+
+      if (!treeId) {
+        setStatus('error', 'QR code detected but not a valid tree ID');
+        showResult('error', '⚠️', 'Not a Tree QR', 'This QR code doesn\'t seem to be a CampusGrove tree tag. Try another.');
+        return;
+      }
+
+      const tree = getTreeById(treeId);
+      if (!tree) {
+        setStatus('error', 'Tree ID not found: ' + treeId);
+        showResult('error', '🌾', 'Tree Not Found', 'ID "' + treeId + '" isn\'t in our database. The tag might be outdated.');
+        return;
+      }
+
+      // SUCCESS
+      stopScanner();
+      setStatus('found', '✅ Found: ' + tree.name + ' (' + treeId + ')');
+      showResult('success', '🌳', tree.name + ' Found!', 'Redirecting to tree profile in 1.5 seconds…');
+
+      setTimeout(() => {
+        window.location.href = 'tree.html?id=' + treeId;
+      }, 1500);
+    }
+
+    function handleScanError(err) {
+      // Suppress frequent scan errors silently
+    }
+
+    function startScanner() {
+      scanning = true;
+      setStatus('ready', 'Camera active — point at a tree QR tag');
+      document.getElementById('scan-sweep').style.display = 'block';
+
+      html5QrCode = new Html5Qrcode('qr-reader');
+
+      Html5Qrcode.getCameras().then(cameras => {
+        if (!cameras || cameras.length === 0) {
+          setStatus('error', 'No cameras found on this device');
+          return;
+        }
+
+        // Prefer back camera
+        const cam = cameras.find(c => c.label.toLowerCase().includes('back') || c.label.toLowerCase().includes('rear')) || cameras[cameras.length - 1];
+
+        html5QrCode.start(
+          cam.id,
+          { fps: 10, qrbox: { width: 220, height: 220 }, aspectRatio: 1.0 },
+          handleScanSuccess,
+          handleScanError
+        ).catch(err => {
+          setStatus('error', 'Camera error: ' + err.message);
+          console.error('QR start error:', err);
+        });
+      }).catch(err => {
+        setStatus('error', 'Camera permission denied or unavailable');
+        console.error(err);
+      });
+    }
+
+    function stopScanner() {
+      if (html5QrCode && scanning) {
+        html5QrCode.stop().catch(() => { });
+        scanning = false;
+      }
+    }
+
+    // Auto-start scanner when camera tab is visible
+    // (We use a button in the html5-qrcode UI instead of auto-starting
+    //  to respect user permission flow)
+
+    // Override html5-qrcode button after it renders
+    const camObserver = new MutationObserver(() => {
+      const startBtn = document.querySelector('#qr-reader__dashboard_section_csr button');
+      if (startBtn && !startBtn.dataset.styled) {
+        startBtn.dataset.styled = '1';
+        startBtn.textContent = '📷 Start Camera';
+        startBtn.addEventListener('click', () => {
+          setStatus('ready', 'Starting camera…');
+        });
+      }
+    });
+
+    camObserver.observe(document.getElementById('qr-reader'), { childList: true, subtree: true });
+
+    // Initialize html5-qrcode
+    html5QrCode = new Html5Qrcode('qr-reader');
+    html5QrCode.render(handleScanSuccess, handleScanError);
+
+    // ── Manual Entry ──
+    function goManual(id) {
+      const cleaned = (id || '').trim().toUpperCase();
+      if (!cleaned) return;
+
+      const tree = getTreeById(cleaned);
+      if (tree) {
+        showResult('success', '🌳', tree.name + ' Found!', 'Opening profile…');
+        setTimeout(() => { window.location.href = 'tree.html?id=' + cleaned; }, 800);
+      } else {
+        showResult('error', '🌾', 'Tree Not Found', '"' + cleaned + '" is not in the registry. Check the ID and try again.');
+      }
+    }
+
+    document.getElementById('manual-go-btn')?.addEventListener('click', () => {
+      goManual(document.getElementById('manual-id-input').value);
+    });
+
+    document.getElementById('manual-id-input')?.addEventListener('keydown', e => {
+      if (e.key === 'Enter') goManual(e.target.value);
+      // Auto uppercase
+      setTimeout(() => { e.target.value = e.target.value.toUpperCase(); }, 0);
+    });
+
+    // ── Sample chips ──
+    const EMOJI = {
+      'Banyan Tree': '🌳', 'Neem Tree': '🌿', 'Rain Tree': '🌲',
+      'Indian Laburnum': '🌼', 'Peepal Tree': '🌳', 'Gulmohar': '🌺',
+      'Mango Tree': '🥭', 'Java Plum': '🫐', 'Arjuna Tree': '🌱', 'African Tulip': '🔴'
+    };
+
+    const chipsEl = document.getElementById('sample-chips');
+    if (chipsEl) {
+      chipsEl.innerHTML = TREES.map(t => `
+        <a href="tree.html?id=${t.id}" class="sample-chip">
+          ${EMOJI[t.name] || '🌳'} ${t.id} · ${t.name.split(' ')[0]}
+        </a>
+      `).join('');
+    }
+
+    // ── INIT ──
+    document.addEventListener('DOMContentLoaded', () => {
+      createParticles();
+    });
+
+    createParticles();
+  </script>
+</body>
+
+</html>
