@@ -125,8 +125,8 @@ function buildTreeCard(tree) {
       <div class="tree-card-banner" style="background: ${bg};">
         ${hasImage
           ? `<img src="${imageUrl}" alt="${tree.name}" loading="lazy" style="width:100%;height:100%;object-fit:cover;" onerror="this.remove();" />
-             <div class="tree-card-emoji">${emoji}</div>`
-          : `<div class="tree-card-emoji">${emoji}</div>`}
+             <div class="tree-card-emoji" aria-hidden="true">${emoji}</div>`
+          : `<div class="tree-card-emoji" aria-hidden="true">${emoji}</div>`}
       </div>
       <div class="tree-card-body">
         <div class="tree-card-top">

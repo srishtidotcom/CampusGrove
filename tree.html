@@ -339,7 +339,7 @@
                     src="${src}"
                     alt="${tree.name} photo ${idx + 1}"
                     loading="lazy"
-                    onerror="this.remove();this.parentElement.querySelector('.tree-photo-fallback').style.display='flex';"
+                    onerror="const fallback=this.parentElement.querySelector('.tree-photo-fallback');if(fallback)fallback.style.display='flex';this.remove();"
                   />
                   <div class="tree-photo-fallback">Image unavailable</div>
                 </div>
