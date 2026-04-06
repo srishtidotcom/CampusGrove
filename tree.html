@@ -282,6 +282,13 @@
       exotic:  ['#1a1208','#2d2010','#b8864c'],
     };
 
+    function handleProfileImageError(img) {
+      if (!img || !img.parentElement) return;
+      const fallback = img.parentElement.querySelector('.tree-photo-fallback');
+      if (fallback) fallback.style.display = 'flex';
+      img.remove();
+    }
+
     // ── QR Code Generation (pure canvas) ──
     function generateQRPlaceholder(treeId, canvas) {
       // Simple visual representation — in production use a real QR library
@@ -339,7 +346,7 @@
                     src="${src}"
                     alt="${tree.name} photo ${idx + 1}"
                     loading="lazy"
-                    onerror="const fallback=this.parentElement.querySelector('.tree-photo-fallback');if(fallback)fallback.style.display='flex';this.remove();"
+                    onerror="handleProfileImageError(this);"
                   />
                   <div class="tree-photo-fallback">Image unavailable</div>
                 </div>

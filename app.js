@@ -60,6 +60,11 @@ function getEmoji(name) {
   return TREE_EMOJI[name] || '🌳';
 }
 
+function handleCardImageError(img) {
+  if (!img) return;
+  img.remove();
+}
+
 // ── Render Stats Strip ──
 function renderStatsStrip() {
   const el = document.getElementById('stats-strip');
@@ -124,7 +129,7 @@ function buildTreeCard(tree) {
     <a class="tree-card reveal" href="tree.html?id=${tree.id}" id="card-${tree.id}">
       <div class="tree-card-banner" style="background: ${bg};">
         ${hasImage
-          ? `<img src="${imageUrl}" alt="${tree.name}" loading="lazy" style="width:100%;height:100%;object-fit:cover;" onerror="this.remove();" />
+          ? `<img src="${imageUrl}" alt="Photo of ${tree.name}" loading="lazy" style="width:100%;height:100%;object-fit:cover;" onerror="handleCardImageError(this);" />
              <div class="tree-card-emoji" aria-hidden="true">${emoji}</div>`
           : `<div class="tree-card-emoji" aria-hidden="true">${emoji}</div>`}
       </div>
