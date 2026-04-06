@@ -109,6 +109,8 @@ function renderHeroStats() {
 function buildTreeCard(tree) {
   const hc = getHealthColor(tree.healthScore);
   const emoji = getEmoji(tree.name);
+  const imageUrl = Array.isArray(tree.images) && tree.images.length > 0 ? tree.images[0] : null;
+  const hasImage = Boolean(imageUrl);
   const bgColors = {
     'Shade Tree':   'linear-gradient(135deg, #14532d, #1a3a20)',
     'Medicinal Tree': 'linear-gradient(135deg, #1e3a1e, #2d4a1e)',
@@ -121,7 +123,10 @@ function buildTreeCard(tree) {
   return `
     <a class="tree-card reveal" href="tree.html?id=${tree.id}" id="card-${tree.id}">
       <div class="tree-card-banner" style="background: ${bg};">
-        <div class="tree-card-emoji">${emoji}</div>
+        ${hasImage
+          ? `<img src="${imageUrl}" alt="${tree.name}" loading="lazy" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none';this.nextElementSibling.style.display='block';" />
+             <div class="tree-card-emoji" style="display:none;">${emoji}</div>`
+          : `<div class="tree-card-emoji">${emoji}</div>`}
       </div>
       <div class="tree-card-body">
         <div class="tree-card-top">

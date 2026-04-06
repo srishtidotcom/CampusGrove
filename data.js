@@ -86,6 +86,7 @@ const TREES = [
   },
   {
     id: "T003",
+    campusTreeNumber: 3,
     name: "Rain Tree",
     scientificName: "Samanea saman",
     localName: "Vilayati Siris",
@@ -120,7 +121,7 @@ const TREES = [
         urgency: "Medium"
       }
     ],
-    images: [],
+    images: ["assests/trees/tree-3.jpeg"],
     tags: ["Exotic", "Shade Provider", "Large Canopy", "Avenue Tree"]
   },
   {
@@ -332,6 +333,7 @@ const TREES = [
   },
   {
     id: "T009",
+    campusTreeNumber: 33,
     name: "Arjuna Tree",
     scientificName: "Terminalia arjuna",
     localName: "Arjun / Arjuna",
@@ -360,11 +362,12 @@ const TREES = [
         urgency: "Medium"
       }
     ],
-    images: [],
+    images: ["assests/trees/tree-33.jpeg"],
     tags: ["Medicinal", "Riparian", "Cardiac Health", "Ayurvedic"]
   },
   {
     id: "T010",
+    campusTreeNumber: 70,
     name: "African Tulip",
     scientificName: "Spathodea campanulata",
     localName: "Flame of the Forest",
@@ -399,7 +402,7 @@ const TREES = [
         urgency: "Low"
       }
     ],
-    images: [],
+    images: ["assests/trees/tree-70.jpeg"],
     tags: ["Exotic", "Flowering", "Invasive Watch", "Bird Pollinated", "Ornamental"]
   }
 ];
