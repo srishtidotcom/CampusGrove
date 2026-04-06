@@ -121,7 +121,7 @@ const TREES = [
         urgency: "Medium"
       }
     ],
-    images: ["assests/trees/tree-3.jpeg"],
+    images: ["assets/trees/tree-3.jpeg"],
     tags: ["Exotic", "Shade Provider", "Large Canopy", "Avenue Tree"]
   },
   {
@@ -362,7 +362,7 @@ const TREES = [
         urgency: "Medium"
       }
     ],
-    images: ["assests/trees/tree-33.jpeg"],
+    images: ["assets/trees/tree-33.jpeg"],
     tags: ["Medicinal", "Riparian", "Cardiac Health", "Ayurvedic"]
   },
   {
@@ -402,7 +402,7 @@ const TREES = [
         urgency: "Low"
       }
     ],
-    images: ["assests/trees/tree-70.jpeg"],
+    images: ["assets/trees/tree-70.jpeg"],
     tags: ["Exotic", "Flowering", "Invasive Watch", "Bird Pollinated", "Ornamental"]
   }
 ];
