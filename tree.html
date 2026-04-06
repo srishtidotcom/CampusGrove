@@ -164,6 +164,36 @@
       gap: 20px;
       padding: 32px;
     }
+    .tree-photo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 12px;
+    }
+    .tree-photo-item {
+      position: relative;
+      height: 160px;
+      border-radius: 12px;
+      border: 1px solid var(--glass-border);
+      background: rgba(255,255,255,0.02);
+      overflow: hidden;
+    }
+    .tree-photo-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .tree-photo-fallback {
+      display: none;
+      width: 100%;
+      height: 100%;
+      border: 1px dashed rgba(134,239,172,0.3);
+      background: rgba(255,255,255,0.02);
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
   </style>
 </head>
 <body>
@@ -302,16 +332,17 @@
         ? `
           <div class="info-card">
             <h3>📷 Tree Photos</h3>
-            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;">
+            <div class="tree-photo-grid">
               ${images.map((src, idx) => `
-                <img
-                  src="${src}"
-                  alt="${tree.name} photo ${idx + 1}"
-                  loading="lazy"
-                  style="width:100%;height:160px;object-fit:cover;border-radius:12px;border:1px solid var(--glass-border);background:rgba(255,255,255,0.02);"
-                  onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"
-                />
-                <div style="display:none;height:160px;border-radius:12px;border:1px dashed rgba(134,239,172,0.3);background:rgba(255,255,255,0.02);align-items:center;justify-content:center;color:var(--text-muted);font-size:13px;">Image unavailable</div>
+                <div class="tree-photo-item">
+                  <img
+                    src="${src}"
+                    alt="${tree.name} photo ${idx + 1}"
+                    loading="lazy"
+                    onerror="this.remove();this.parentElement.querySelector('.tree-photo-fallback').style.display='flex';"
+                  />
+                  <div class="tree-photo-fallback">Image unavailable</div>
+                </div>
               `).join('')}
             </div>
           </div>
