@@ -129,8 +129,7 @@ function buildTreeCard(tree) {
     <a class="tree-card reveal" href="tree.html?id=${tree.id}" id="card-${tree.id}">
       <div class="tree-card-banner" style="background: ${bg};">
         ${hasImage
-          ? `<img src="${imageUrl}" alt="Photo of ${tree.name}" loading="lazy" style="width:100%;height:100%;object-fit:cover;" onerror="handleCardImageError(this);" />
-             <div class="tree-card-emoji" aria-hidden="true">${emoji}</div>`
+          ? `<img src="${imageUrl}" alt="Photo of ${tree.name}" loading="lazy" style="width:100%;height:100%;object-fit:cover;" onerror="handleCardImageError(this);" />`
           : `<div class="tree-card-emoji" aria-hidden="true">${emoji}</div>`}
       </div>
       <div class="tree-card-body">

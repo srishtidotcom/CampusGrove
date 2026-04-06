@@ -194,6 +194,18 @@
       color: var(--text-muted);
       font-size: 13px;
     }
+    .profile-meta-badges {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
+    .profile-meta-badge-muted {
+      background: rgba(255,255,255,0.08);
+      color: var(--text-muted);
+      border-color: rgba(255,255,255,0.12);
+    }
   </style>
 </head>
 <body>
@@ -334,11 +346,9 @@
       const emoji = getEmoji(tree.name);
       const bg = tree.isLocal ? BG_GRADIENTS.local : BG_GRADIENTS.exotic;
       const images = Array.isArray(tree.images) ? tree.images : [];
-      const campusTag = tree.campusTreeNumber ? `<span class="local-badge" style="background:rgba(255,255,255,0.08);color:var(--text-muted);border-color:rgba(255,255,255,0.12);">Campus Tree #${tree.campusTreeNumber}</span>` : '';
-      const photoSection = images.length > 0
+      const campusTag = tree.campusTreeNumber ? `<span class="local-badge profile-meta-badge-muted">Campus Tree #${tree.campusTreeNumber}</span>` : '';
+      const photoContent = images.length > 0
         ? `
-          <div class="info-card">
-            <h3>📷 Tree Photos</h3>
             <div class="tree-photo-grid">
               ${images.map((src, idx) => `
                 <div class="tree-photo-item">
@@ -352,14 +362,8 @@
                 </div>
               `).join('')}
             </div>
-          </div>
-        `
-        : `
-          <div class="info-card">
-            <h3>📷 Tree Photos</h3>
-            <p style="font-size:14px;color:var(--text-muted);">No uploaded photos yet for this tree.</p>
-          </div>
-        `;
+          `
+        : `<p style="font-size:14px;color:var(--text-muted);">No uploaded photos yet for this tree.</p>`;
 
       const urgencyOrder = { 'Critical': 0, 'High': 1, 'Medium': 2, 'Low': 3 };
       const sortedCare = [...tree.care].sort((a, b) => urgencyOrder[a.urgency] - urgencyOrder[b.urgency]);
@@ -375,10 +379,10 @@
             <div class="profile-header-grid">
               <div class="profile-emoji-circle">${emoji}</div>
               <div>
-                <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+                <div class="profile-meta-badges">
                   <span class="local-badge ${tree.isLocal ? 'local' : 'exotic'}">${tree.isLocal ? '🇮🇳 Native Species' : '🌍 Exotic / Introduced'}</span>
-                  <span class="local-badge" style="background:rgba(255,255,255,0.08);color:var(--text-muted);border-color:rgba(255,255,255,0.12);">${tree.category}</span>
-                  <span class="local-badge" style="background:rgba(255,255,255,0.08);color:var(--text-muted);border-color:rgba(255,255,255,0.12);">${tree.id}</span>
+                  <span class="local-badge profile-meta-badge-muted">${tree.category}</span>
+                  <span class="local-badge profile-meta-badge-muted">${tree.id}</span>
                   ${campusTag}
                 </div>
                 <div class="profile-name">${tree.name}</div>
@@ -407,7 +411,10 @@
                 <div class="fun-fact-text">${tree.funFact}</div>
               </div>
             </div>
-            ${photoSection}
+            <div class="info-card">
+              <h3>📷 Tree Photos</h3>
+              ${photoContent}
+            </div>
 
             <!-- Tree Specs -->
             <div class="info-card">
